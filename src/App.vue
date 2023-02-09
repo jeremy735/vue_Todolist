@@ -21,11 +21,8 @@ export default {
   components:{MyHeader,MyList,MyFooter},
   data(){
         return{
-            todos:[
-                {id:'0001',title:'吃飯',done:true},
-                {id:'0002',title:'喝酒',done:false},
-                {id:'0003',title:'開車',done:true}
-            ]
+          // 先用json.parse解析後獨取值才不會一開始拿到json字符串
+          todos:JSON.parse(localStorage.getItem('todos')) || [] // 注意: 一般來說用戶一開始不會有 todos 的資料在 LocalStorage，所以必須要利用 '或' 操作 如果 localStorage.getItem 返回值是一個 null ，就為 一個數組。
         }
     },
     methods:{
@@ -49,6 +46,14 @@ export default {
       },
       clearAllTodo(){
         this.todos = this.todos.filter((item)=>item.done !== true)
+      }
+    },
+    watch:{
+      todos:{
+        deep:true,//加入深入監測保證勾選done發生變化時也要改變localStorage 的資料
+        handler(value){
+          localStorage.setItem('todos',JSON.stringify(value))
+        }
       }
     }
   }
