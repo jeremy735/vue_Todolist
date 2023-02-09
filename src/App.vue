@@ -2,9 +2,9 @@
   <div id="root">
 		<div class="todo-container">
 			<div class="todo-wrap">
-				<MyHeader :addTodo="addTodo"/>
-				<MyList :todos="todos" :checkTodo="checkTodo" :deleteTodo="deleteTodo"/>
-				<MyFooter :todos="todos" :checkAllTodo="checkAllTodo" :clearAllTodo="clearAllTodo"/>
+				<MyHeader @addTodo="addTodo"/>
+				<MyList :todos="todos" />
+				<MyFooter :todos="todos" @checkAllTodo="checkAllTodo" @clearAllTodo="clearAllTodo"/>
 			</div>
 		</div>
 	</div>
@@ -36,6 +36,11 @@ export default {
           if(todo.id === id) todo.done =!todo.done
         })
       },
+      updateTodo(id,title){
+        this.todos.forEach((todo)=>{
+          if(todo.id === id) todo.title = title
+        })
+      },
       deleteTodo(id){
        this.todos = this.todos.filter(todo => todo.id !== id )
       },
@@ -52,9 +57,20 @@ export default {
       todos:{
         deep:true,//加入深入監測保證勾選done發生變化時也要改變localStorage 的資料
         handler(value){
+          //存入直是obj 先把數組轉為json 字符串後存入
           localStorage.setItem('todos',JSON.stringify(value))
         }
       }
+    },
+    mounted(){
+      this.$bus.$on('checkTodo',this.checkTodo)
+      this.$bus.$on('deleteTodo',this.deleteTodo)
+      this.$bus.$on('updateTodo',this.updateTodo)
+    },
+    beforeDestroy(){
+      this.$bus.$off('checkTodo')
+      this.$bus.$off('deleteTodo')
+      this.$bus.$off('updateTodo')
     }
   }
 
@@ -81,6 +97,12 @@ export default {
       color: #fff;
       background-color: #da4f49;
       border: 1px solid #bd362f;
+    }
+    .btn-edit {
+      color: #fff;
+      background-color: skyblue;
+      border: 1px solid rgb(108, 188, 219);
+      margin-right: 5px;
     }
     .btn-danger:hover {
       color: #fff;

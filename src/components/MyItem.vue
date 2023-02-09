@@ -8,9 +8,17 @@
                 vue只能监视浅层次的props,对象的属性值修改它不能监视到
             -->
 			<!-- <input type="checkbox" v-model="todo.done"/> -->
-            <span>{{todo.title}}</span>
+            <span v-show="!todo.isEdit">{{todo.title}}</span>
+			<input
+				type="text" 
+				v-show="todo.isEdit" 
+				:value="todo.title" 
+				@blur="handelBlur(todo,$event)" 
+				ref="inputTitle"
+			>
         </label>
         <button class="btn btn-danger" @click="handleDelete(todo.id)">删除</button>
+		<button v-show="!todo.isEdit" class="btn btn-edit" @click="handelEdit(todo)" >編輯</button>
     </li>
 </template>
 
@@ -18,17 +26,35 @@
 export default{
     name:'MyItem',
     //聲明接收todo對象
-    props:['todo','checkTodo','deleteTodo'],
+    props:['todo'],
     methods:{
         handleCheck(id){
             // 通知app組建將對應的todo對象的done值取反
-            this.checkTodo(id)
+            // this.checkTodo(id)
+			this.$bus.$emit('checkTodo',id)
         },
         handleDelete(id){
             if(confirm('確定刪除嗎？')){
-                this.deleteTodo(id)
+                // this.deleteTodo(id)
+				this.$bus.$emit('deleteTodo',id)
             }
-        }
+        },
+		handelEdit(todo){
+			if(todo.hasOwnProperty.call('isEdit')){
+				todo.isEdit = true
+			}else{
+				console.log('@')
+				this.$set(todo,'isEdit',true)
+			}
+			this.$nextTick(function(){
+				this.$refs.inputTitle.focus()
+			})
+		},
+		handelBlur(todo,e){
+			todo.isEdit = false
+			if(!e.target.value.trim()) return alert('輸入不能為空')
+			this.$bus.$emit('updateTodo',todo.id,e.target.value)
+		}
     },
    
 
